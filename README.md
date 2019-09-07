@@ -2,7 +2,7 @@
 widgets for easy integration kladr.ru (autocomplete regions, citys, street, etc.) in Yii2
 
 install:
-composer `require svit/yii2kladr`
+composer `require svitws/yii2klard`
 
 use:
 ```
