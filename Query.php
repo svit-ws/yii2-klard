@@ -1,12 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daniil
- * Date: 30.06.16
- * Time: 12:29
- */
 
-namespace andkon\yii2kladr;
+namespace svitws\yii2kladr;
 
 /**
  * Класс запроса

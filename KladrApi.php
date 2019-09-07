@@ -1,12 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daniil
- * Date: 30.06.16
- * Time: 12:32
- */
 
-namespace andkon\yii2kladr;
+namespace svitws\yii2kladr;
+
+use yii\base\UnknownPropertyException;
+use yii\helpers\ArrayHelper;
 
 /**
  * Контроллер для доступа к сервису
@@ -27,15 +24,12 @@ class KladrApi
      * @param string $token
      * @param string $key
      */
-    public function __construct($token, $key, $domain = false)
+    public function __construct($token, $key)
     {
-        $this->token  = $token;
-        $this->key    = $key;
-        $this->error  = null;
-        $this->domain = 'http://kladr-api.ru/';
-        if ($domain) {
-            $this->domain = $domain;
-        }
+        $this->token = $token;
+        $this->key = $key;
+        $this->error = null;
+        $this->domain = ArrayHelper::getValue(\Yii::$app->params, 'kladrDomain', 'http://kladr-api.ru/');
     }
 
     /**
@@ -50,9 +44,9 @@ class KladrApi
             return $city;
         }
 
-        $query         = self::getQuery(Kladr::TYPE_CITY);
+        $query = self::getQuery(Kladr::TYPE_CITY);
         $query->cityId = $cityId;
-        $city          = self::getInstanse()->queryToArray($query);
+        $city = self::getInstance()->queryToArray($query);
 
         self::saveToCache(Kladr::TYPE_CITY, $cityId, $city);
 
@@ -60,7 +54,7 @@ class KladrApi
     }
 
     /**
-     * @param string  $type
+     * @param string $type
      * @param integer $id
      *
      * @return mixed
@@ -71,11 +65,12 @@ class KladrApi
     }
 
     /**
+     * @param $type
      * @return Query
      */
     public static function getQuery($type)
     {
-        $query              = new Query();
+        $query = new Query();
         $query->contentType = $type;
 
         return $query;
@@ -99,7 +94,7 @@ class KladrApi
      * Возвращает результат запроса к сервису
      *
      * @param Query $query Объект запроса
-     * @param bool  $assoc Вернуть ответ в виде ассоциативного массива
+     * @param bool $assoc Вернуть ответ в виде ассоциативного массива
      *
      * @return bool|mixed
      */
@@ -109,8 +104,8 @@ class KladrApi
         if (!$url) {
             return false;
         }
-        $context = stream_context_create(array('http' => array('header' => 'Connection: close\r\n')));
-        $result  = file_get_contents($url, false, $context);
+        $context = stream_context_create(['http' => ['header' => 'Connection: close\r\n']]);
+        $result = file_get_contents($url, false, $context);
         if (preg_match('/Error: (.*)/', $result, $matches)) {
             $this->error = $matches[1];
 
@@ -144,7 +139,7 @@ class KladrApi
     /**
      * @return KladrApi
      */
-    public static function getInstanse()
+    public static function getInstance()
     {
         if (!self::$instance) {
             self::$instance = new self(\Yii::$app->params['kladrToken'], '');
@@ -154,7 +149,7 @@ class KladrApi
     }
 
     /**
-     * @param string  $type
+     * @param string $type
      * @param integer $id
      * @param         $obj
      */
@@ -174,9 +169,9 @@ class KladrApi
         if ($street) {
             return $street;
         }
-        $query           = self::getQuery(Kladr::TYPE_STREET);
+        $query = self::getQuery(Kladr::TYPE_STREET);
         $query->streetId = $streetId;
-        $street          = self::getInstanse()->queryToArray($query);
+        $street = self::getInstance()->queryToArray($query);
 
         self::saveToCache(Kladr::TYPE_STREET, $streetId, $street);
 
@@ -194,9 +189,9 @@ class KladrApi
         if ($building) {
             return $building;
         }
-        $query             = self::getQuery(Kladr::TYPE_BUILDING);
+        $query = self::getQuery(Kladr::TYPE_BUILDING);
         $query->buildingId = $buildingId;
-        $building          = self::getInstanse()->queryToArray($query);
+        $building = self::getInstance()->queryToArray($query);
 
         self::saveToCache(Kladr::TYPE_BUILDING, $buildingId, $building);
 
@@ -214,15 +209,14 @@ class KladrApi
     {
         $obResult = $this->queryToJson($query);
         if (!$obResult) {
-            return array();
+            return [];
         }
         if (isset($obResult->searchContext->oneString)) {
-            $this->error = 'Возвращение результата в виде объектов при ' .
-                'поиске по всему адресу (одной строкой) невозможен';
+            $this->error = 'Возвращение результата в виде объектов при ' . 'поиске по всему адресу (одной строкой) невозможен';
 
-            return array();
+            return [];
         }
-        $arObjects = array();
+        $arObjects = [];
         foreach ($obResult->result as $obObject) {
             $arObjects[] = new Object($obObject);
         }
@@ -236,5 +230,7 @@ class KladrApi
             case 'Error':
                 return $this->error;
         }
+
+        throw new UnknownPropertyException();
     }
 }

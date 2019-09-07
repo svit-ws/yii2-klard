@@ -1,15 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: andkon
- * Date: 28.06.16
- * Time: 18:09
- */
 
-namespace andkon\yii2kladr;
+namespace svitws\yii2kladr;
 
-use andkon\yii2kladr\assets\KladrAsset;
+use svitws\yii2kladr\assets\KladrAsset;
 use yii\helpers\Html;
+use yii\web\View;
 use yii\widgets\InputWidget;
 
 /**
@@ -49,8 +44,8 @@ class Kladr extends InputWidget
         }
 
         if (!$this->name) {
-            $this->name  = Html::getInputName($this->model, $this->attribute);
-            $this->id    = Html::getInputId($this->model, $this->attribute);
+            $this->name = Html::getInputName($this->model, $this->attribute);
+            $this->id = Html::getInputId($this->model, $this->attribute);
             $this->value = $this->model->{$this->attribute};
         }
 
@@ -60,7 +55,7 @@ class Kladr extends InputWidget
     /** @inheritdoc */
     public function run()
     {
-        $this->containerId            = KladrApi::KLADR_CACHE_PREFIX . \Yii::$app->getSecurity()->generateRandomString(10);
+        $this->containerId = KladrApi::KLADR_CACHE_PREFIX . \Yii::$app->getSecurity()->generateRandomString(10);
         $this->containerOptions['id'] = $this->containerId;
         echo Html::beginTag($this->containerTag, $this->containerOptions);
         $name = explode(']', $this->name);
@@ -73,10 +68,16 @@ class Kladr extends InputWidget
             $fakeName .= ']';
         }
 
-        $fakeId                    = $this->id . '_kladr';
-        self::$inputs[$this->type] = [$this->id, $this->containerId . ' #' . $fakeId];
+        $fakeId = $this->id . '_kladr';
+        self::$inputs[$this->type] = [
+            $this->id,
+            $this->containerId . ' #' . $fakeId,
+        ];
 
-        $options = array_merge($this->options, ['id' => $fakeId, 'data-kladr-id' => $this->value]);
+        $options = array_merge($this->options, [
+            'id' => $fakeId,
+            'data-kladr-id' => $this->value,
+        ]);
         $this->registryJsForInput($fakeId, $this->id);
 
         $value = $this->value;
@@ -99,8 +100,7 @@ class Kladr extends InputWidget
                 $value = $obj[0]['name'];
             }
         } else {
-            $value = (is_array($this->options) && array_key_exists('value', $this->options))
-                ? $this->options['value'] : $value;
+            $value = (is_array($this->options) && array_key_exists('value', $this->options)) ? $this->options['value'] : $value;
         }
         echo Html::textInput($fakeName, $value, $options);
         $options = array_merge($this->options, ['id' => $this->id]);
@@ -113,7 +113,7 @@ class Kladr extends InputWidget
      */
     public static function getKladrApi()
     {
-        return KladrApi::getInstanse();
+        return KladrApi::getInstance();
     }
 
     /** @inheritdoc */

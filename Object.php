@@ -1,12 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daniil
- * Date: 30.06.16
- * Time: 12:31
- */
 
-namespace andkon\yii2kladr;
+namespace svitws\yii2kladr;
 
 /**
  * Объект КЛАДР
@@ -29,7 +23,7 @@ class Object
     private $contentType;
     /** @var array Массив родительских объектов */
     private $arParents;
-s
+
     /**
      * @param $obObject
      */
