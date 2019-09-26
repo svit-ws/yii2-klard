@@ -20,7 +20,7 @@ class Query
     /** @var  string Выполнить поиск по полной записи адреса, одной строкой */
     public $oneString;
     /** @var  string Получить объекты вместе с родителями */
-    public $withParent;
+    public $withParent = true;
     /** @var  string Ограничение количества возвращаемых объектов */
     public $limit;
     public $regionId;

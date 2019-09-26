@@ -33,6 +33,7 @@ class Kladr extends InputWidget
     public $containerOptions = [];
 
     protected $containerId;
+    protected $token;
 
     static protected $inputs = [];
 
@@ -50,6 +51,14 @@ class Kladr extends InputWidget
         }
 
         KladrAsset::register($this->getView());
+        $params = \Yii::$app->params;
+        $this->token = $params['kladrToken'];
+        /** @noinspection JSUnresolvedVariable */
+        $js = <<<JS
+    $.kladr.url = '{$params['kladrDomain']}api.php';
+JS;
+
+        $this->getView()->registerJs($js);
     }
 
     /** @inheritdoc */
@@ -122,12 +131,14 @@ class Kladr extends InputWidget
         switch ($this->type) {
             case self::TYPE_STREET:
                 $script = '$("#' . $this->containerId . ' #' . $fakeId . '")
-                .kladr({type: "' . $this->type . '", parentType: $.kladr.type.city, 
+                .kladr({type: "' . $this->type . '", parentType: $.kladr.type.city,
+                token: "' . $this->token . '", 
                 parentInput:"#' . self::$inputs[self::TYPE_CITY][1] . '"})';
                 break;
             case self::TYPE_BUILDING:
                 $script = '$("#' . $this->containerId . ' #' . $fakeId . '")
                 .kladr({type: "' . $this->type . '", parentType: $.kladr.type.street, 
+                token: "' . $this->token . '", 
                 parentInput:"#' . self::$inputs[self::TYPE_STREET][1] . '"})';
                 break;
             case self::TYPE_ZIP:
@@ -143,7 +154,8 @@ class Kladr extends InputWidget
                 $script = '$("#' . $this->containerId . ' #' . $fakeId . '")';
                 break;
             default:
-                $script = '$("#' . $this->containerId . ' #' . $fakeId . '").kladr({type: "' . $this->type . '"})';
+                $script = '$("#' . $this->containerId . ' #' . $fakeId . '")
+                .kladr({type: "' . $this->type . '", token: "' . $this->token . '"})';
         }
 
         $script .= '.change(
