@@ -179,21 +179,28 @@ class KladrApi
     }
 
     /**
-     * @param integer $buildingId
+     * @param integer $streetId
      *
+     * @param string $q
      * @return array
      */
-    public static function getBuilding($buildingId)
+    public static function getBuilding($streetId, $q = null)
     {
-        $building = self::getFromCache(Kladr::TYPE_BUILDING, $buildingId);
+        $key = $streetId . $q;
+        $building = self::getFromCache(Kladr::TYPE_BUILDING, $key);
         if ($building) {
             return $building;
         }
         $query = self::getQuery(Kladr::TYPE_BUILDING);
-        $query->buildingId = $buildingId;
+        if ($q) {
+            $query->streetId = $streetId;
+            $query->contentName = $q;
+        } else {
+            $query->buildingId = $streetId;
+        }
         $building = self::getInstance()->queryToArray($query);
 
-        self::saveToCache(Kladr::TYPE_BUILDING, $buildingId, $building);
+        self::saveToCache(Kladr::TYPE_BUILDING, $key, $building);
 
         return $building;
     }
